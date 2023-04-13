@@ -124,3 +124,7 @@ If you find this repo useful in your research, please consider citing the follow
   year={2023}
 }
 ```
+
+## License
+
+The project is only free for academic research purposes, but needs authorization for commerce. For commerce permission, please contact wyt@pku.edu.cn.

@@ -57,7 +57,6 @@ Download MS COCO dataset images ([train](http://images.cocodataset.org/zips/trai
 
 ```
 ├── coco
-│   ├── images
 │   ├── train2017.txt
 │   ├── val2017.txt
 │   ├── test-dev2017.txt

@@ -100,7 +100,7 @@ if __name__ == '__main__':
         print('***************************************************')
         print(' '.join(thres))
         for idx, thr in enumerate(thres):
-            print('First: {}%\tSecond: {}%\tThre: {}'.format(100 - idx * 10, idx  * 10, thr))
+            print('First: {}%\tSecond: {}%\tThreshold: {}'.format(100 - idx * 10, idx  * 10, thr))
         print('***************************************************')
     else:
         raise NotImplementedError

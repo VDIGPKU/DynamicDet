@@ -4,6 +4,7 @@ import math
 import os
 import random
 import time
+from copy import deepcopy
 from pathlib import Path
 from threading import Thread
 import yaml
@@ -454,8 +455,8 @@ def train(hyp, opt, device, tb_writer=None):
                 ckpt = {'epoch': epoch,
                         'best_fitness': best_fitness,
                         'training_results': results_file.read_text(),
-                        'model': get_state_dict(model.module if is_parallel(model) else model),
-                        'ema': get_state_dict(ema.ema),
+                        'model': get_state_dict(deepcopy(model.module if is_parallel(model) else model).half()),
+                        'ema': get_state_dict(deepcopy(ema.ema).half()),
                         'updates': ema.updates,
                         'optimizer': optimizer.state_dict(),
                         'wandb_id': wandb_logger.wandb_run.id if wandb_logger.wandb else None}

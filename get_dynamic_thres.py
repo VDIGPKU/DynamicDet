@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 from models.yolo import Model
 from utils.datasets import create_dataloader
@@ -41,6 +42,15 @@ def get_thres(data,
     model.load_state_dict(state_dict, strict=True)  # load
     model.to(device)
     logger.info('Transferred %g/%g items from %s' % (len(state_dict), len(model.state_dict()), weight))  # report
+    for p in model.parameters():
+        p.requires_grad = False
+    model.float().fuse().eval()
+    # Compatibility updates
+    for m in model.modules():
+        if type(m) in [nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6, nn.SiLU]:
+            m.inplace = True  # pytorch 1.7.0 compatibility
+        elif type(m) is nn.Upsample:
+            m.recompute_scale_factor = None  # torch 1.11.0 compatibility
     gs = max(int(model.stride.max()), 32)  # grid size (max stride)
     imgsz = check_img_size(imgsz, s=gs)  # check img_size
 
@@ -50,7 +60,6 @@ def get_thres(data,
     half = device.type != 'cpu' and half_precision  # half precision only supported on CUDA
     if half:
         model.half()
-    model.eval()
 
     # Dataloader
     if device.type != 'cpu':

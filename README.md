@@ -1,4 +1,4 @@
-# DynamicDet [[arXiv]](https://arxiv.org/abs/2304.05552)
+# DynamicDet [\[arXiv\]](https://arxiv.org/abs/2304.05552)
 
 This repo contains the official implementation of [**"DynamicDet: A Unified Dynamic Architecture for Object Detection"**](https://arxiv.org/abs/2304.05552).
 
@@ -12,23 +12,22 @@ This repo contains the official implementation of [**"DynamicDet: A Unified Dyna
 
 MS COCO
 
-| Model                                                | Easy / Hard | Size | FLOPs  | FPS  | AP<sup>val</sup> | AP<sup>test</sup> |
-| :----------------------------------------------------------- | :---------: | :--: | :----: | :--: | :--------------: | :---------------: |
-| [**Dy-YOLOv7**](https://github.com/VDIGPKU/DynamicDet/releases/download/v0.1/dy-yolov7.pt) |  90% / 10%  | 640  | 112.4G | 110  |      51.4%       |       52.1%       |
-|                                                              |  50% / 50%  | 640  | 143.2G |  96  |      52.7%       |       53.3%       |
-|                                                              |  10% / 90%  | 640  | 174.0G |  85  |      53.3%       |       53.8%       |
-|                                                              |  0% / 100%  | 640  | 181.7G |  83  |      53.5%       |       53.9%       |
-|                                                              |             |      |        |      |                  |                   |
-| [**Dy-YOLOv7-X**](https://github.com/VDIGPKU/DynamicDet/releases/download/v0.1/dy-yolov7x.pt) |  90% / 10%  | 640  | 201.7G |  98  |      53.0%       |       53.3%       |
-|                                                              |  50% / 50%  | 640  | 248.9G |  78  |      54.2%       |       54.4%       |
-|                                                              |  10% / 90%  | 640  | 296.1G |  65  |      54.7%       |       55.0%       |
-|                                                              |  0% / 100%  | 640  | 307.9G |  64  |      54.8%       |       55.0%       |
-|                                                              |             |      |        |      |                  |                   |
-| [**Dy-YOLOv7-W6**](https://github.com/VDIGPKU/DynamicDet/releases/download/v0.1/dy-yolov7-w6.pt) |  90% / 10%  | 1280 | 384.2G |  74  |      54.9%       |       55.2%       |
-|                                                              |  50% / 50%  | 1280 | 480.8G |  58  |      55.9%       |       56.1%       |
-|                                                              |  10% / 90%  | 1280 | 577.4G |  48  |      56.4%       |       56.7%       |
-|                                                              |  0% / 100%  | 1280 | 601.6G |  46  |      56.5%       |       56.8%       |
-
+| Model                                                                                            | Easy / Hard | Size | FLOPs  | FPS | AP<sup>val</sup> | AP<sup>test</sup> |
+| :----------------------------------------------------------------------------------------------- | :---------: | :--: | :----: | :-: | :--------------: | :---------------: |
+| [**Dy-YOLOv7**](https://github.com/VDIGPKU/DynamicDet/releases/download/v0.1/dy-yolov7.pt)       |  90% / 10%  | 640  | 112.4G | 110 |      51.4%       |       52.1%       |
+|                                                                                                  |  50% / 50%  | 640  | 143.2G | 96  |      52.7%       |       53.3%       |
+|                                                                                                  |  10% / 90%  | 640  | 174.0G | 85  |      53.3%       |       53.8%       |
+|                                                                                                  |  0% / 100%  | 640  | 181.7G | 83  |      53.5%       |       53.9%       |
+|                                                                                                  |             |      |        |     |                  |                   |
+| [**Dy-YOLOv7-X**](https://github.com/VDIGPKU/DynamicDet/releases/download/v0.1/dy-yolov7x.pt)    |  90% / 10%  | 640  | 201.7G | 98  |      53.0%       |       53.3%       |
+|                                                                                                  |  50% / 50%  | 640  | 248.9G | 78  |      54.2%       |       54.4%       |
+|                                                                                                  |  10% / 90%  | 640  | 296.1G | 65  |      54.7%       |       55.0%       |
+|                                                                                                  |  0% / 100%  | 640  | 307.9G | 64  |      54.8%       |       55.0%       |
+|                                                                                                  |             |      |        |     |                  |                   |
+| [**Dy-YOLOv7-W6**](https://github.com/VDIGPKU/DynamicDet/releases/download/v0.1/dy-yolov7-w6.pt) |  90% / 10%  | 1280 | 384.2G | 74  |      54.9%       |       55.2%       |
+|                                                                                                  |  50% / 50%  | 1280 | 480.8G | 58  |      55.9%       |       56.1%       |
+|                                                                                                  |  10% / 90%  | 1280 | 577.4G | 48  |      56.4%       |       56.7%       |
+|                                                                                                  |  0% / 100%  | 1280 | 601.6G | 46  |      56.5%       |       56.8%       |
 
 <details>
 <summary> Table Notes </summary>
@@ -39,7 +38,6 @@ MS COCO
 
 </details>
 
-
 ## Quick Start
 
 ### Installation
@@ -49,7 +47,6 @@ cd DynamicDet
 conda install pytorch=1.11 cudatoolkit=11.3 torchvision -c pytorch
 pip install -r requirements.txt
 ```
-
 
 ### Data preparation
 
@@ -95,21 +92,21 @@ python train_step2.py --workers 4 --device 0 --batch-size 1 --epochs 2 --img 640
 
 ### Getting the dynamic thresholds for variable-speed inference
 
-  ```bash
+```bash
 python get_dynamic_thres.py --device 0 --batch-size 1 --img-size 640 --cfg cfg/dy-yolov7-step2.yaml --weight weights/dy-yolov7.pt --data data/coco.yaml --task val
-  ```
+```
 
 ### Testing
 
-  ```bash
+```bash
 python test.py --img-size 640 --batch-size 1 --conf 0.001 --iou 0.65 --device 0 --cfg cfg/dy-yolov7-step2.yaml --weight weights/dy-yolov7.pt --data data/coco.yaml --dy-thres <DY_THRESHOLD>
-  ```
+```
 
 ### Inference
 
-  ```bash
+```bash
 python detect.py --cfg cfg/dy-yolov7-step2.yaml --weight weights/dy-yolov7.pt --num-classes 80 --source <IMAGE/VIDEO> --device 0 --dy-thres <DY_THRESHOLD>
-  ```
+```
 
 ## Citation
 

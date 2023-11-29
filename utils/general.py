@@ -21,15 +21,20 @@ from utils.torch_utils import init_torch_seeds
 
 # Settings
 torch.set_printoptions(linewidth=320, precision=5, profile='long')
-np.set_printoptions(linewidth=320, formatter={'float_kind': '{:11.5g}'.format})  # format short g, %precision=5
+np.set_printoptions(linewidth=320,
+                    formatter={'float_kind': '{:11.5g}'.format
+                               })  # format short g, %precision=5
 pd.options.display.max_columns = 10
-cv2.setNumThreads(0)  # prevent OpenCV from multithreading (incompatible with PyTorch DataLoader)
-os.environ['NUMEXPR_MAX_THREADS'] = str(min(os.cpu_count(), 8))  # NumExpr max threads
+cv2.setNumThreads(
+    0
+)  # prevent OpenCV from multithreading (incompatible with PyTorch DataLoader)
+os.environ['NUMEXPR_MAX_THREADS'] = str(min(os.cpu_count(),
+                                            8))  # NumExpr max threads
 
 
 def set_logging(rank=-1):
     logging.basicConfig(
-        format="%(message)s",
+        format='%(message)s',
         level=logging.INFO if rank in [-1, 0] else logging.WARN)
 
 
@@ -53,14 +58,16 @@ def isdocker():
 
 def emojis(str=''):
     # Return platform-dependent emoji-safe version of string
-    return str.encode().decode('ascii', 'ignore') if platform.system() == 'Windows' else str
+    return str.encode().decode(
+        'ascii', 'ignore') if platform.system() == 'Windows' else str
 
 
 def check_online():
     # Check internet connectivity
     import socket
     try:
-        socket.create_connection(("1.1.1.1", 443), 5)  # check host accesability
+        socket.create_connection(('1.1.1.1', 443),
+                                 5)  # check host accesability
         return True
     except OSError:
         return False
@@ -75,9 +82,15 @@ def check_git_status():
         assert check_online(), 'skipping check (offline)'
 
         cmd = 'git fetch && git config --get remote.origin.url'
-        url = subprocess.check_output(cmd, shell=True).decode().strip().rstrip('.git')  # github repo url
-        branch = subprocess.check_output('git rev-parse --abbrev-ref HEAD', shell=True).decode().strip()  # checked out
-        n = int(subprocess.check_output(f'git rev-list {branch}..origin/master --count', shell=True))  # commits behind
+        url = subprocess.check_output(cmd, shell=True).decode().strip().rstrip(
+            '.git')  # github repo url
+        branch = subprocess.check_output(
+            'git rev-parse --abbrev-ref HEAD',
+            shell=True).decode().strip()  # checked out
+        n = int(
+            subprocess.check_output(
+                f'git rev-list {branch}..origin/master --count',
+                shell=True))  # commits behind
         if n > 0:
             s = f"⚠️ WARNING: code is out of date by {n} commit{'s' * (n > 1)}. " \
                 f"Use 'git pull' to update or 'git clone {url}' to download latest."
@@ -95,9 +108,13 @@ def check_requirements(requirements='requirements.txt', exclude=()):
     if isinstance(requirements, (str, Path)):  # requirements.txt file
         file = Path(requirements)
         if not file.exists():
-            print(f"{prefix} {file.resolve()} not found, check failed.")
+            print(f'{prefix} {file.resolve()} not found, check failed.')
             return
-        requirements = [f'{x.name}{x.specifier}' for x in pkg.parse_requirements(file.open()) if x.name not in exclude]
+        requirements = [
+            f'{x.name}{x.specifier}'
+            for x in pkg.parse_requirements(file.open())
+            if x.name not in exclude
+        ]
     else:  # list or tuple of packages
         requirements = [x for x in requirements if x not in exclude]
 
@@ -107,8 +124,10 @@ def check_requirements(requirements='requirements.txt', exclude=()):
             pkg.require(r)
         except Exception as e:  # DistributionNotFound or VersionConflict if requirements not met
             n += 1
-            print(f"{prefix} {e.req} not found, attempting auto-update...")
-            print(subprocess.check_output(f"pip install '{e.req}'", shell=True).decode())
+            print(f'{prefix} {e.req} not found, attempting auto-update...')
+            print(
+                subprocess.check_output(f"pip install '{e.req}'",
+                                        shell=True).decode())
 
     if n:  # if packages updated
         source = file.resolve() if 'file' in locals() else requirements
@@ -121,21 +140,26 @@ def check_img_size(img_size, s=32):
     # Verify img_size is a multiple of stride s
     new_size = make_divisible(img_size, int(s))  # ceil gs-multiple
     if new_size != img_size:
-        print('WARNING: --img-size %g must be multiple of max stride %g, updating to %g' % (img_size, s, new_size))
+        print(
+            'WARNING: --img-size %g must be multiple of max stride %g, updating to %g'
+            % (img_size, s, new_size))
     return new_size
 
 
 def check_imshow():
     # Check if environment supports image displays
     try:
-        assert not isdocker(), 'cv2.imshow() is disabled in Docker environments'
+        assert not isdocker(
+        ), 'cv2.imshow() is disabled in Docker environments'
         cv2.imshow('test', np.zeros((1, 1, 3)))
         cv2.waitKey(1)
         cv2.destroyAllWindows()
         cv2.waitKey(1)
         return True
     except Exception as e:
-        print(f'WARNING: Environment does not support cv2.imshow() or PIL Image.show() image displays\n{e}')
+        print(
+            f'WARNING: Environment does not support cv2.imshow() or PIL Image.show() image displays\n{e}'
+        )
         return False
 
 
@@ -146,7 +170,9 @@ def check_file(file):
     else:
         files = glob.glob('./**/' + file, recursive=True)  # find file
         assert len(files), f'File Not Found: {file}'  # assert file was found
-        assert len(files) == 1, f"Multiple files match '{file}', specify exact path: {files}"  # assert unique
+        assert len(
+            files
+        ) == 1, f"Multiple files match '{file}', specify exact path: {files}"  # assert unique
         return files[0]  # return file
 
 
@@ -154,18 +180,25 @@ def check_dataset(dict):
     # Download dataset if not found locally
     val, s = dict.get('val'), dict.get('download')
     if val and len(val):
-        val = [Path(x).resolve() for x in (val if isinstance(val, list) else [val])]  # val path
+        val = [
+            Path(x).resolve()
+            for x in (val if isinstance(val, list) else [val])
+        ]  # val path
         if not all(x.exists() for x in val):
-            print('\nWARNING: Dataset not found, nonexistent paths: %s' % [str(x) for x in val if not x.exists()])
+            print('\nWARNING: Dataset not found, nonexistent paths: %s' %
+                  [str(x) for x in val if not x.exists()])
             if s and len(s):  # download script
                 print('Downloading %s ...' % s)
                 if s.startswith('http') and s.endswith('.zip'):  # URL
                     f = Path(s).name  # filename
                     torch.hub.download_url_to_file(s, f)
-                    r = os.system('unzip -q %s -d ../ && rm %s' % (f, f))  # unzip
+                    r = os.system('unzip -q %s -d ../ && rm %s' %
+                                  (f, f))  # unzip
                 else:  # bash script
                     r = os.system(s)
-                print('Dataset autodownload %s\n' % ('success' if r == 0 else 'failure'))  # analyze return value
+                print('Dataset autodownload %s\n' %
+                      ('success'
+                       if r == 0 else 'failure'))  # analyze return value
             else:
                 raise Exception('Dataset not found.')
 
@@ -177,7 +210,7 @@ def make_divisible(x, divisor):
 
 def clean_str(s):
     # Cleans a string by replacing special characters with underscore _
-    return re.sub(pattern="[|@#!¡·$€%&()=?¿^*;:,¨´><+]", repl="_", string=s)
+    return re.sub(pattern='[|@#!¡·$€%&()=?¿^*;:,¨´><+]', repl='_', string=s)
 
 
 def one_cycle(y1=0.0, y2=1.0, steps=100):
@@ -187,26 +220,29 @@ def one_cycle(y1=0.0, y2=1.0, steps=100):
 
 def colorstr(*input):
     # Colors a string https://en.wikipedia.org/wiki/ANSI_escape_code, i.e.  colorstr('blue', 'hello world')
-    *args, string = input if len(input) > 1 else ('blue', 'bold', input[0])  # color arguments, string
-    colors = {'black': '\033[30m',  # basic colors
-              'red': '\033[31m',
-              'green': '\033[32m',
-              'yellow': '\033[33m',
-              'blue': '\033[34m',
-              'magenta': '\033[35m',
-              'cyan': '\033[36m',
-              'white': '\033[37m',
-              'bright_black': '\033[90m',  # bright colors
-              'bright_red': '\033[91m',
-              'bright_green': '\033[92m',
-              'bright_yellow': '\033[93m',
-              'bright_blue': '\033[94m',
-              'bright_magenta': '\033[95m',
-              'bright_cyan': '\033[96m',
-              'bright_white': '\033[97m',
-              'end': '\033[0m',  # misc
-              'bold': '\033[1m',
-              'underline': '\033[4m'}
+    *args, string = input if len(input) > 1 else ('blue', 'bold', input[0]
+                                                  )  # color arguments, string
+    colors = {
+        'black': '\033[30m',  # basic colors
+        'red': '\033[31m',
+        'green': '\033[32m',
+        'yellow': '\033[33m',
+        'blue': '\033[34m',
+        'magenta': '\033[35m',
+        'cyan': '\033[36m',
+        'white': '\033[37m',
+        'bright_black': '\033[90m',  # bright colors
+        'bright_red': '\033[91m',
+        'bright_green': '\033[92m',
+        'bright_yellow': '\033[93m',
+        'bright_blue': '\033[94m',
+        'bright_magenta': '\033[95m',
+        'bright_cyan': '\033[96m',
+        'bright_white': '\033[97m',
+        'end': '\033[0m',  # misc
+        'bold': '\033[1m',
+        'underline': '\033[4m'
+    }
     return ''.join(colors[x] for x in args) + f'{string}' + colors['end']
 
 
@@ -231,21 +267,27 @@ def labels_to_class_weights(labels, nc=80):
 
 def labels_to_image_weights(labels, nc=80, class_weights=np.ones(80)):
     # Produces image weights based on class_weights and image contents
-    class_counts = np.array([np.bincount(x[:, 0].astype(np.int), minlength=nc) for x in labels])
+    class_counts = np.array(
+        [np.bincount(x[:, 0].astype(np.int), minlength=nc) for x in labels])
     image_weights = (class_weights.reshape(1, nc) * class_counts).sum(1)
     # index = random.choices(range(n), weights=image_weights, k=1)  # weight image sample
     return image_weights
 
 
-def coco80_to_coco91_class():  # converts 80-index (val2014) to 91-index (paper)
+def coco80_to_coco91_class(
+):  # converts 80-index (val2014) to 91-index (paper)
     # https://tech.amikelive.com/node-718/what-object-categories-labels-are-in-coco-dataset/
     # a = np.loadtxt('data/coco.names', dtype='str', delimiter='\n')
     # b = np.loadtxt('data/coco_paper.names', dtype='str', delimiter='\n')
     # x1 = [list(a[i] == b).index(True) + 1 for i in range(80)]  # darknet to coco
     # x2 = [list(b[i] == a).index(True) if any(b[i] == a) else None for i in range(91)]  # coco to darknet
-    x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28, 31, 32, 33, 34,
-         35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
-         64, 65, 67, 70, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90]
+    x = [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+        22, 23, 24, 25, 27, 28, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+        43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61,
+        62, 63, 64, 65, 67, 70, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 84,
+        85, 86, 87, 88, 89, 90
+    ]
     return x
 
 
@@ -292,7 +334,8 @@ def segment2box(segment, width=640, height=640):
     x, y = segment.T  # segment xy
     inside = (x >= 0) & (y >= 0) & (x <= width) & (y <= height)
     x, y, = x[inside], y[inside]
-    return np.array([x.min(), y.min(), x.max(), y.max()]) if any(x) else np.zeros((1, 4))  # xyxy
+    return np.array([x.min(), y.min(), x.max(),
+                     y.max()]) if any(x) else np.zeros((1, 4))  # xyxy
 
 
 def segments2boxes(segments):
@@ -310,15 +353,19 @@ def resample_segments(segments, n=1000):
         s = np.concatenate((s, s[0:1, :]), axis=0)
         x = np.linspace(0, len(s) - 1, n)
         xp = np.arange(len(s))
-        segments[i] = np.concatenate([np.interp(x, xp, s[:, i]) for i in range(2)]).reshape(2, -1).T  # segment xy
+        segments[i] = np.concatenate([
+            np.interp(x, xp, s[:, i]) for i in range(2)
+        ]).reshape(2, -1).T  # segment xy
     return segments
 
 
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
     # Rescale coords (xyxy) from img1_shape to img0_shape
     if ratio_pad is None:  # calculate from img0_shape
-        gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
-        pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
+        gain = min(img1_shape[0] / img0_shape[0],
+                   img1_shape[1] / img0_shape[1])  # gain  = old / new
+        pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (
+            img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
     else:
         gain = ratio_pad[0][0]
         pad = ratio_pad[1]
@@ -338,7 +385,13 @@ def clip_coords(boxes, img_shape):
     boxes[:, 3].clamp_(0, img_shape[0])  # y2
 
 
-def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False, eps=1e-7):
+def bbox_iou(box1,
+             box2,
+             x1y1x2y2=True,
+             GIoU=False,
+             DIoU=False,
+             CIoU=False,
+             eps=1e-7):
     # Returns the IoU of box1 to box2. box1 is 4, box2 is nx4
     box2 = box2.T
 
@@ -364,16 +417,20 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False, eps=
     iou = inter / union
 
     if GIoU or DIoU or CIoU:
-        cw = torch.max(b1_x2, b2_x2) - torch.min(b1_x1, b2_x1)  # convex (smallest enclosing box) width
+        cw = torch.max(b1_x2, b2_x2) - torch.min(
+            b1_x1, b2_x1)  # convex (smallest enclosing box) width
         ch = torch.max(b1_y2, b2_y2) - torch.min(b1_y1, b2_y1)  # convex height
         if CIoU or DIoU:  # Distance or Complete IoU https://arxiv.org/abs/1911.08287v1
-            c2 = cw ** 2 + ch ** 2 + eps  # convex diagonal squared
-            rho2 = ((b2_x1 + b2_x2 - b1_x1 - b1_x2) ** 2 +
-                    (b2_y1 + b2_y2 - b1_y1 - b1_y2) ** 2) / 4  # center distance squared
+            c2 = cw**2 + ch**2 + eps  # convex diagonal squared
+            rho2 = ((b2_x1 + b2_x2 - b1_x1 - b1_x2)**2 +
+                    (b2_y1 + b2_y2 - b1_y1 - b1_y2)**
+                    2) / 4  # center distance squared
             if DIoU:
                 return iou - rho2 / c2  # DIoU
             elif CIoU:  # https://github.com/Zzh-tju/DIoU-SSD-pytorch/blob/master/utils/box/box_utils.py#L47
-                v = (4 / math.pi ** 2) * torch.pow(torch.atan(w2 / (h2 + eps)) - torch.atan(w1 / (h1 + eps)), 2)
+                v = (4 / math.pi**2) * torch.pow(
+                    torch.atan(w2 / (h2 + eps)) - torch.atan(w1 /
+                                                             (h1 + eps)), 2)
                 with torch.no_grad():
                     alpha = v / (v - iou + (1 + eps))
                 return iou - (rho2 / c2 + v * alpha)  # CIoU
@@ -384,7 +441,14 @@ def bbox_iou(box1, box2, x1y1x2y2=True, GIoU=False, DIoU=False, CIoU=False, eps=
         return iou  # IoU
 
 
-def bbox_alpha_iou(box1, box2, x1y1x2y2=False, GIoU=False, DIoU=False, CIoU=False, alpha=2, eps=1e-9):
+def bbox_alpha_iou(box1,
+                   box2,
+                   x1y1x2y2=False,
+                   GIoU=False,
+                   DIoU=False,
+                   CIoU=False,
+                   alpha=2,
+                   eps=1e-9):
     # Returns tsqrt_he IoU of box1 to box2. box1 is 4, box2 is nx4
     box2 = box2.T
 
@@ -409,37 +473,41 @@ def bbox_alpha_iou(box1, box2, x1y1x2y2=False, GIoU=False, DIoU=False, CIoU=Fals
 
     # change iou into pow(iou+eps)
     # iou = inter / union
-    iou = torch.pow(inter/union + eps, alpha)
+    iou = torch.pow(inter / union + eps, alpha)
     # beta = 2 * alpha
     if GIoU or DIoU or CIoU:
-        cw = torch.max(b1_x2, b2_x2) - torch.min(b1_x1, b2_x1)  # convex (smallest enclosing box) width
+        cw = torch.max(b1_x2, b2_x2) - torch.min(
+            b1_x1, b2_x1)  # convex (smallest enclosing box) width
         ch = torch.max(b1_y2, b2_y2) - torch.min(b1_y1, b2_y1)  # convex height
         if CIoU or DIoU:  # Distance or Complete IoU https://arxiv.org/abs/1911.08287v1
-            c2 = (cw ** 2 + ch ** 2) ** alpha + eps  # convex diagonal
+            c2 = (cw**2 + ch**2)**alpha + eps  # convex diagonal
             rho_x = torch.abs(b2_x1 + b2_x2 - b1_x1 - b1_x2)
             rho_y = torch.abs(b2_y1 + b2_y2 - b1_y1 - b1_y2)
-            rho2 = ((rho_x ** 2 + rho_y ** 2) / 4) ** alpha  # center distance
+            rho2 = ((rho_x**2 + rho_y**2) / 4)**alpha  # center distance
             if DIoU:
                 return iou - rho2 / c2  # DIoU
             elif CIoU:  # https://github.com/Zzh-tju/DIoU-SSD-pytorch/blob/master/utils/box/box_utils.py#L47
-                v = (4 / math.pi ** 2) * torch.pow(torch.atan(w2 / h2) - torch.atan(w1 / h1), 2)
+                v = (4 / math.pi**2) * torch.pow(
+                    torch.atan(w2 / h2) - torch.atan(w1 / h1), 2)
                 with torch.no_grad():
                     alpha_ciou = v / ((1 + eps) - inter / union + v)
                 # return iou - (rho2 / c2 + v * alpha_ciou)  # CIoU
-                return iou - (rho2 / c2 + torch.pow(v * alpha_ciou + eps, alpha))  # CIoU
+                return iou - (
+                    rho2 / c2 + torch.pow(v * alpha_ciou + eps, alpha))  # CIoU
         else:  # GIoU https://arxiv.org/pdf/1902.09630.pdf
             # c_area = cw * ch + eps  # convex area
             # return iou - (c_area - union) / c_area  # GIoU
-            c_area = torch.max(cw * ch + eps, union) # convex area
-            return iou - torch.pow((c_area - union) / c_area + eps, alpha)  # GIoU
+            c_area = torch.max(cw * ch + eps, union)  # convex area
+            return iou - torch.pow(
+                (c_area - union) / c_area + eps, alpha)  # GIoU
     else:
-        return iou # torch.log(iou+eps) or iou
+        return iou  # torch.log(iou+eps) or iou
 
 
 def box_iou(box1, box2):
     # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
-    """
-    Return intersection-over-union (Jaccard index) of boxes.
+    """Return intersection-over-union (Jaccard index) of boxes.
+
     Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
     Arguments:
         box1 (Tensor[N, 4])
@@ -457,8 +525,10 @@ def box_iou(box1, box2):
     area2 = box_area(box2.T)
 
     # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
-    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
-    return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
+    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) -
+             torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+    return inter / (area1[:, None] + area2 - inter
+                    )  # iou = inter / (area1 + area2 - inter)
 
 
 def wh_iou(wh1, wh2):
@@ -466,12 +536,14 @@ def wh_iou(wh1, wh2):
     wh1 = wh1[:, None]  # [N,1,2]
     wh2 = wh2[None]  # [1,M,2]
     inter = torch.min(wh1, wh2).prod(2)  # [N,M]
-    return inter / (wh1.prod(2) + wh2.prod(2) - inter)  # iou = inter / (area1 + area2 - inter)
+    return inter / (wh1.prod(2) + wh2.prod(2) - inter
+                    )  # iou = inter / (area1 + area2 - inter)
 
 
 def box_giou(box1, box2):
-    """
-    Return generalized intersection-over-union (Jaccard index) between two sets of boxes.
+    """Return generalized intersection-over-union (Jaccard index) between two
+    sets of boxes.
+
     Both sets of boxes are expected to be in ``(x1, y1, x2, y2)`` format with
     ``0 <= x1 < x2`` and ``0 <= y1 < y2``.
     Args:
@@ -489,7 +561,8 @@ def box_giou(box1, box2):
     area1 = box_area(box1.T)
     area2 = box_area(box2.T)
 
-    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) -
+             torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
     union = (area1[:, None] + area2 - inter)
 
     iou = inter / union
@@ -504,8 +577,9 @@ def box_giou(box1, box2):
 
 
 def box_ciou(box1, box2, eps: float = 1e-7):
-    """
-    Return complete intersection-over-union (Jaccard index) between two sets of boxes.
+    """Return complete intersection-over-union (Jaccard index) between two sets
+    of boxes.
+
     Both sets of boxes are expected to be in ``(x1, y1, x2, y2)`` format with
     ``0 <= x1 < x2`` and ``0 <= y1 < y2``.
     Args:
@@ -524,7 +598,8 @@ def box_ciou(box1, box2, eps: float = 1e-7):
     area1 = box_area(box1.T)
     area2 = box_area(box2.T)
 
-    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) -
+             torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
     union = (area1[:, None] + area2 - inter)
 
     iou = inter / union
@@ -533,7 +608,7 @@ def box_ciou(box1, box2, eps: float = 1e-7):
     rbi = torch.max(box1[:, None, 2:], box2[:, 2:])
 
     whi = (rbi - lti).clamp(min=0)  # [N,M,2]
-    diagonal_distance_squared = (whi[:, :, 0] ** 2) + (whi[:, :, 1] ** 2) + eps
+    diagonal_distance_squared = (whi[:, :, 0]**2) + (whi[:, :, 1]**2) + eps
 
     # centers of boxes
     x_p = (box1[:, None, 0] + box1[:, None, 2]) / 2
@@ -541,7 +616,7 @@ def box_ciou(box1, box2, eps: float = 1e-7):
     x_g = (box2[:, 0] + box2[:, 2]) / 2
     y_g = (box2[:, 1] + box2[:, 3]) / 2
     # The distance between boxes' centers squared.
-    centers_distance_squared = (x_p - x_g) ** 2 + (y_p - y_g) ** 2
+    centers_distance_squared = (x_p - x_g)**2 + (y_p - y_g)**2
 
     w_pred = box1[:, None, 2] - box1[:, None, 0]
     h_pred = box1[:, None, 3] - box1[:, None, 1]
@@ -549,15 +624,18 @@ def box_ciou(box1, box2, eps: float = 1e-7):
     w_gt = box2[:, 2] - box2[:, 0]
     h_gt = box2[:, 3] - box2[:, 1]
 
-    v = (4 / (torch.pi ** 2)) * torch.pow((torch.atan(w_gt / h_gt) - torch.atan(w_pred / h_pred)), 2)
+    v = (4 / (torch.pi**2)) * torch.pow(
+        (torch.atan(w_gt / h_gt) - torch.atan(w_pred / h_pred)), 2)
     with torch.no_grad():
         alpha = v / (1 - iou + v + eps)
-    return iou - (centers_distance_squared / diagonal_distance_squared) - alpha * v
+    return iou - (centers_distance_squared /
+                  diagonal_distance_squared) - alpha * v
 
 
 def box_diou(box1, box2, eps: float = 1e-7):
-    """
-    Return distance intersection-over-union (Jaccard index) between two sets of boxes.
+    """Return distance intersection-over-union (Jaccard index) between two sets
+    of boxes.
+
     Both sets of boxes are expected to be in ``(x1, y1, x2, y2)`` format with
     ``0 <= x1 < x2`` and ``0 <= y1 < y2``.
     Args:
@@ -576,7 +654,8 @@ def box_diou(box1, box2, eps: float = 1e-7):
     area1 = box_area(box1.T)
     area2 = box_area(box2.T)
 
-    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
+    inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) -
+             torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
     union = (area1[:, None] + area2 - inter)
 
     iou = inter / union
@@ -585,7 +664,7 @@ def box_diou(box1, box2, eps: float = 1e-7):
     rbi = torch.max(box1[:, None, 2:], box2[:, 2:])
 
     whi = (rbi - lti).clamp(min=0)  # [N,M,2]
-    diagonal_distance_squared = (whi[:, :, 0] ** 2) + (whi[:, :, 1] ** 2) + eps
+    diagonal_distance_squared = (whi[:, :, 0]**2) + (whi[:, :, 1]**2) + eps
 
     # centers of boxes
     x_p = (box1[:, None, 0] + box1[:, None, 2]) / 2
@@ -593,16 +672,21 @@ def box_diou(box1, box2, eps: float = 1e-7):
     x_g = (box2[:, 0] + box2[:, 2]) / 2
     y_g = (box2[:, 1] + box2[:, 3]) / 2
     # The distance between boxes' centers squared.
-    centers_distance_squared = (x_p - x_g) ** 2 + (y_p - y_g) ** 2
+    centers_distance_squared = (x_p - x_g)**2 + (y_p - y_g)**2
 
     # The distance IoU is the IoU penalized by a normalized
     # distance between boxes' centers squared.
     return iou - (centers_distance_squared / diagonal_distance_squared)
 
 
-def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=None, agnostic=False, multi_label=False,
+def non_max_suppression(prediction,
+                        conf_thres=0.25,
+                        iou_thres=0.45,
+                        classes=None,
+                        agnostic=False,
+                        multi_label=False,
                         labels=()):
-    """Runs Non-Maximum Suppression (NMS) on inference results
+    """Runs Non-Maximum Suppression (NMS) on inference results.
 
     Returns:
          list of detections, on (n,6) tensor per image [xyxy, conf, cls]
@@ -621,7 +705,8 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
     merge = False  # use merge-NMS
 
     t = time.time()
-    output = [torch.zeros((0, 6), device=prediction.device)] * prediction.shape[0]
+    output = [torch.zeros(
+        (0, 6), device=prediction.device)] * prediction.shape[0]
     for xi, x in enumerate(prediction):  # image index, image inference
         # Apply constraints
         # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0  # width-height
@@ -642,8 +727,10 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
 
         # Compute conf
         if nc == 1:
-            x[:, 5:] = x[:, 4:5] # for models with one class, cls_loss is 0 and cls_conf is always 0.5,
-                                 # so there is no need to multiplicate.
+            x[:,
+              5:] = x[:, 4:
+                      5]  # for models with one class, cls_loss is 0 and cls_conf is always 0.5,
+            # so there is no need to multiplicate.
         else:
             x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
 
@@ -656,7 +743,8 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
             x = torch.cat((box[i], x[i, j + 5, None], j[:, None].float()), 1)
         else:  # best class only
             conf, j = x[:, 5:].max(1, keepdim=True)
-            x = torch.cat((box, conf, j.float()), 1)[conf.view(-1) > conf_thres]
+            x = torch.cat((box, conf, j.float()),
+                          1)[conf.view(-1) > conf_thres]
 
         # Filter by class
         if classes is not None:
@@ -671,19 +759,23 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
         if not n:  # no boxes
             continue
         elif n > max_nms:  # excess boxes
-            x = x[x[:, 4].argsort(descending=True)[:max_nms]]  # sort by confidence
+            x = x[x[:, 4].argsort(
+                descending=True)[:max_nms]]  # sort by confidence
 
         # Batched NMS
         c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
-        boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
+        boxes, scores = x[:, :4] + c, x[:,
+                                        4]  # boxes (offset by class), scores
         i = torchvision.ops.nms(boxes, scores, iou_thres)  # NMS
         if i.shape[0] > max_det:  # limit detections
             i = i[:max_det]
-        if merge and (1 < n < 3E3):  # Merge NMS (boxes merged using weighted mean)
+        if merge and (1 < n <
+                      3E3):  # Merge NMS (boxes merged using weighted mean)
             # update boxes as boxes(i,4) = weights(i,n) * boxes(n,4)
             iou = box_iou(boxes[i], boxes) > iou_thres  # iou matrix
             weights = iou * scores[None]  # box weights
-            x[i, :4] = torch.mm(weights, x[:, :4]).float() / weights.sum(1, keepdim=True)  # merged boxes
+            x[i, :4] = torch.mm(weights, x[:, :4]).float() / weights.sum(
+                1, keepdim=True)  # merged boxes
             if redundant:
                 i = i[iou.sum(1) > 1]  # require redundancy
 
@@ -695,7 +787,8 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
     return output
 
 
-def strip_optimizer(f='best.pt', s=''):  # from utils.general import *; strip_optimizer()
+def strip_optimizer(f='best.pt',
+                    s=''):  # from utils.general import *; strip_optimizer()
     # Strip optimizer from 'f' to finalize training, optionally save as 's'
     x = torch.load(f, map_location=torch.device('cpu'))
     if x.get('ema'):
@@ -705,7 +798,9 @@ def strip_optimizer(f='best.pt', s=''):  # from utils.general import *; strip_op
     x['epoch'] = -1
     torch.save(x, s or f)
     mb = os.path.getsize(s or f) / 1E6  # filesize
-    print(f"Optimizer stripped from {f},{(' saved as %s,' % s) if s else ''} {mb:.1f}MB")
+    print(
+        f"Optimizer stripped from {f},{(' saved as %s,' % s) if s else ''} {mb:.1f}MB"
+    )
 
 
 def increment_path(path, exist_ok=True, sep=''):
@@ -714,8 +809,8 @@ def increment_path(path, exist_ok=True, sep=''):
     if (path.exists() and exist_ok) or (not path.exists()):
         return str(path)
     else:
-        dirs = glob.glob(f"{path}{sep}*")  # similar paths
-        matches = [re.search(rf"%s{sep}(\d+)" % path.stem, d) for d in dirs]
+        dirs = glob.glob(f'{path}{sep}*')  # similar paths
+        matches = [re.search(rf'%s{sep}(\d+)' % path.stem, d) for d in dirs]
         i = [int(m.groups()[0]) for m in matches if m]  # indices
         n = max(i) + 1 if i else 2  # increment number
-        return f"{path}{sep}{n}"  # update path
+        return f'{path}{sep}{n}'  # update path

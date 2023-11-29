@@ -1,7 +1,9 @@
 from collections import OrderedDict
 
+
 def weights_to_cpu(state_dict):
     """Copy a model state_dict to cpu.
+
     Args:
         state_dict (OrderedDict): Model weights on GPU.
     Returns:

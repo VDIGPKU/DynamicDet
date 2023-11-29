@@ -1,7 +1,6 @@
 import argparse
 
 import yaml
-
 from wandb_utils import WandbLogger
 
 WANDB_ARTIFACT_PREFIX = 'wandb-artifact://'

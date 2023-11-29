@@ -13,7 +13,6 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision
 
 try:
     import thop  # for FLOPS computation
@@ -54,7 +53,7 @@ def git_describe(path=Path(__file__).parent):  # path must be a directory
     try:
         return subprocess.check_output(s, shell=True,
                                        stderr=subprocess.STDOUT).decode()[:-1]
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         return ''  # not a git repository
 
 
@@ -118,7 +117,7 @@ def profile(x, ops, n=100, device=None):
         try:
             flops = thop.profile(m, inputs=(x, ),
                                  verbose=False)[0] / 1E9 * 2  # GFLOPS
-        except:
+        except Exception:
             flops = 0
 
         for _ in range(n):
@@ -128,7 +127,7 @@ def profile(x, ops, n=100, device=None):
             try:
                 _ = y.sum().backward()
                 t[2] = time_synchronized()
-            except:  # no backward method
+            except Exception:  # no backward method
                 t[2] = float('nan')
             dtf += (t[1] - t[0]) * 1000 / n  # ms per op forward
             dtb += (t[2] - t[1]) * 1000 / n  # ms per op backward
@@ -348,7 +347,7 @@ def revert_sync_batchnorm(module):
     # https://github.com/pytorch/pytorch/blob/c8b3686a3e4ba63dc59e5dcfe5db3430df256833/torch/nn/modules/batchnorm.py#L679
     module_output = module
     if isinstance(module, torch.nn.modules.batchnorm.SyncBatchNorm):
-        new_cls = BatchNormXd
+        # new_cls = BatchNormXd
         module_output = BatchNormXd(module.num_features, module.eps,
                                     module.momentum, module.affine,
                                     module.track_running_stats)

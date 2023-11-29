@@ -13,7 +13,7 @@ from models.yolo import Model
 from utils.datasets import LoadImages, LoadStreams
 from utils.general import (check_img_size, check_imshow, increment_path,
                            non_max_suppression, scale_coords, set_logging,
-                           strip_optimizer, xyxy2xywh)
+                           xyxy2xywh)
 from utils.plots import plot_one_box
 from utils.torch_utils import intersect_dicts, select_device, time_synchronized
 
@@ -98,7 +98,7 @@ def detect(save_img=False):
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
 
-        # Warmup
+        # warm up
         if device.type != 'cpu' and (old_img_b != img.shape[0]
                                      or old_img_h != img.shape[2]
                                      or old_img_w != img.shape[3]):
@@ -201,7 +201,7 @@ def detect(save_img=False):
 
     if save_txt or save_img:
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
-        #print(f"Results saved to {save_dir}{s}")
+        # print(f"Results saved to {save_dir}{s}")
 
     print(f'Done. ({time.time() - t0:.3f}s)')
 

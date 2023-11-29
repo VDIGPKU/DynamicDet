@@ -6,7 +6,7 @@ import torch.utils.checkpoint as checkpoint
 
 from utils.general import non_max_suppression
 
-##### basic ####
+# basic
 
 
 def autopad(k, p=None):  # kernel, padding
@@ -105,9 +105,7 @@ class ConvCheckpoint(nn.Module):
         return x
 
 
-##### end of basic #####
-
-##### cspnet #####
+# cspnet
 
 
 class SPPCSPC(nn.Module):
@@ -132,9 +130,7 @@ class SPPCSPC(nn.Module):
         return self.cv7(torch.cat((y1, y2), dim=1))
 
 
-##### end of cspnet #####
-
-##### yolor #####
+# yolor
 
 
 class ImplicitA(nn.Module):
@@ -165,9 +161,7 @@ class ImplicitM(nn.Module):
         return self.implicit * x
 
 
-##### end of yolor #####
-
-##### repvgg #####
+# repvgg
 
 
 class RepConv(nn.Module):
@@ -302,7 +296,7 @@ class RepConv(nn.Module):
     def fuse_repvgg_block(self):
         if self.deploy:
             return
-        print(f'RepConv.fuse_repvgg_block')
+        print('RepConv.fuse_repvgg_block')
 
         self.rbr_dense = self.fuse_conv_bn(self.rbr_dense[0],
                                            self.rbr_dense[1])
@@ -346,9 +340,9 @@ class RepConv(nn.Module):
             weight_identity_expanded = torch.nn.Parameter(
                 torch.zeros_like(weight_1x1_expanded))
 
-        #print(f"self.rbr_1x1.weight = {self.rbr_1x1.weight.shape}, ")
-        #print(f"weight_1x1_expanded = {weight_1x1_expanded.shape}, ")
-        #print(f"self.rbr_dense.weight = {self.rbr_dense.weight.shape}, ")
+        # print(f"self.rbr_1x1.weight = {self.rbr_1x1.weight.shape}, ")
+        # print(f"weight_1x1_expanded = {weight_1x1_expanded.shape}, ")
+        # print(f"self.rbr_dense.weight = {self.rbr_dense.weight.shape}, ")
 
         self.rbr_dense.weight = torch.nn.Parameter(self.rbr_dense.weight +
                                                    weight_1x1_expanded +
@@ -373,9 +367,7 @@ class RepConv(nn.Module):
             self.rbr_dense = None
 
 
-##### end of repvgg #####
-
-##### yolov5 #####
+# yolov5
 
 
 class NMS(nn.Module):
@@ -394,9 +386,7 @@ class NMS(nn.Module):
                                    classes=self.classes)
 
 
-##### end of yolov5 ######
-
-##### CBNet #####
+# CBNet
 
 
 class CBLinear(nn.Module):
@@ -439,9 +429,7 @@ class CBFuse(nn.Module):
         return out
 
 
-##### end of CBNet #####
-
-##### DynamicDet #####
+# DynamicDet
 
 
 def sigmoid(logits, hard=False, threshold=0.5):
@@ -484,6 +472,3 @@ class AdaptiveRouter(nn.Module):
         else:
             xs = xs.sigmoid()
         return xs
-
-
-##### end of DynamicDet #####

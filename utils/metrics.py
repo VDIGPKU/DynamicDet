@@ -220,7 +220,7 @@ class ConfusionMatrix:
             fig.axes[0].set_xlabel('True')
             fig.axes[0].set_ylabel('Predicted')
             fig.savefig(Path(save_dir) / 'confusion_matrix.png', dpi=250)
-        except Exception as e:
+        except Exception:
             pass
 
     def print(self):
@@ -228,7 +228,7 @@ class ConfusionMatrix:
             print(' '.join(map(str, self.matrix[i])))
 
 
-# Plots ----------------------------------------------------------------------------------------------------------------
+# Plots --------------------------------------------------------------------------------------------------------------
 
 
 def plot_pr_curve(px, py, ap, save_dir='pr_curve.png', names=()):

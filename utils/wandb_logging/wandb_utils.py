@@ -6,15 +6,15 @@ import torch
 import yaml
 from tqdm import tqdm
 
-sys.path.append(str(Path(__file__).parent.parent.parent))  # add utils/ to path
 from utils.datasets import LoadImagesAndLabels, img2label_paths
 from utils.general import check_dataset, colorstr, xywh2xyxy
 
 try:
     import wandb
-    from wandb import finish, init
 except ImportError:
     wandb = None
+
+sys.path.append(str(Path(__file__).parent.parent.parent))  # add utils/ to path
 
 WANDB_ARTIFACT_PREFIX = 'wandb-artifact://'
 
@@ -90,7 +90,8 @@ class WandbLogger():
         # Pre-training routine --
         self.job_type = job_type
         self.wandb, self.wandb_run, self.data_dict = wandb, None if not wandb else wandb.run, data_dict
-        # It's more elegant to stick to 1 wandb.init call, but useful config data is overwritten in the WandbLogger's wandb.init call
+        # It's more elegant to stick to 1 wandb.init call, but useful config data is overwritten in the
+        # WandbLogger's wandb.init call
         if isinstance(opt.resume, str):  # checks resume from artifact
             if opt.resume.startswith(WANDB_ARTIFACT_PREFIX):
                 run_id, project, model_artifact_name = get_run_info(opt.resume)
@@ -146,12 +147,15 @@ class WandbLogger():
             if modeldir:
                 self.weights = Path(modeldir) / 'last.pt'
                 config = self.wandb_run.config
-                opt.weights, opt.save_period, opt.batch_size, opt.bbox_interval, opt.epochs, opt.hyp = str(
-                    self.weights), config.save_period, config.total_batch_size, config.bbox_interval, config.epochs, \
-                                                                                                       config.opt['hyp']
+                (opt.weights, opt.save_period, opt.batch_size,
+                 opt.bbox_interval, opt.epochs,
+                 opt.hyp) = (str(self.weights), config.save_period,
+                             config.total_batch_size, config.bbox_interval,
+                             config.epochs, config.opt['hyp'])
             data_dict = dict(self.wandb_run.config.data_dict
                              )  # eliminates the need for config file to resume
-        if 'val_artifact' not in self.__dict__:  # If --upload_dataset is set, use the existing artifact, don't download
+        # If --upload_dataset is set, use the existing artifact, don't download
+        if 'val_artifact' not in self.__dict__:
             self.train_artifact_path, self.train_artifact = self.download_dataset_artifact(
                 data_dict.get('train'), opt.artifact_alias)
             self.val_artifact_path, self.val_artifact = self.download_dataset_artifact(
@@ -261,7 +265,8 @@ class WandbLogger():
             self.val_table_map[data[3]] = data[0]
 
     def create_dataset_table(self, dataset, class_to_id, name='dataset'):
-        # TODO: Explore multiprocessing to slpit this loop parallely| This is essential for speeding up the the logging
+        # TODO: Explore multiprocessing to slpit this loop parallelly|
+        # This is essential for speeding up the the logging
         artifact = wandb.Artifact(name=name, type='dataset')
         img_files = tqdm([dataset.path]) if isinstance(
             dataset.path, str) and Path(dataset.path).is_dir() else None

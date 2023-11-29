@@ -1,28 +1,29 @@
-import argparse
 import logging
 import math
 import sys
 from copy import deepcopy
 from pathlib import Path
 
-import yaml
-
-sys.path.append('./')  # to run '$ python *.py' files in subdirectories
-logger = logging.getLogger(__name__)
 import torch
+import torch.nn as nn
+import yaml
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from models.common import *
+from models.common import (NMS, SPPCSPC, AdaptiveRouter, CBFuse, CBLinear,
+                           Concat, Conv, ConvCheckpoint, ImplicitA, ImplicitM,
+                           ReOrg, RepConv, Shortcut, autoShape)
 from utils.autoanchor import check_anchor_order
-from utils.general import check_file, make_divisible, set_logging
+from utils.general import make_divisible
 from utils.torch_utils import (copy_attr, fuse_conv_and_bn, initialize_weights,
-                               model_info, scale_img, select_device,
-                               time_synchronized)
+                               model_info, scale_img, time_synchronized)
 
 try:
     import thop  # for FLOPS computation
 except ImportError:
     thop = None
+
+sys.path.append('./')  # to run '$ python *.py' files in subdirectories
+logger = logging.getLogger(__name__)
 
 
 class IDetect(nn.Module):
@@ -180,8 +181,10 @@ class Model(nn.Module):
             logger.info(
                 f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override yaml value
-        self.model_b, self.save_b, self.model_b2, self.save_b2, self.model_h, self.save_h, self.model_h2, self.save_h2 = parse_model(
-            deepcopy(self.yaml), ch_b=[ch])  # model, savelist
+        (self.model_b, self.save_b, self.model_b2, self.save_b2, self.model_h,
+         self.save_h, self.model_h2,
+         self.save_h2) = parse_model(deepcopy(self.yaml),
+                                     ch_b=[ch])  # model, savelist
         self.keep_input = self.yaml.get('keep_input', False)
         self.names = [str(i) for i in range(self.yaml['nc'])]  # default names
         # print([x.shape for x in self.forward(torch.zeros(1, ch, 64, 64))])
@@ -439,7 +442,7 @@ class Model(nn.Module):
         ]:
             for m in model.modules():
                 if isinstance(m, RepConv):
-                    #print(f" fuse_repvgg_block")
+                    # print(f" fuse_repvgg_block")
                     m.fuse_repvgg_block()
                 elif type(m) is Conv and hasattr(m, 'bn'):
                     m.conv = fuse_conv_and_bn(m.conv, m.bn)  # update conv
@@ -505,7 +508,7 @@ def parse_model(d, ch_b):  # model_dict, input_channels(3)
         for j, a in enumerate(args):
             try:
                 args[j] = eval(a) if isinstance(a, str) else a  # eval strings
-            except:
+            except Exception:
                 pass
 
         n = max(round(n * gd), 1) if n > 1 else n  # depth gain
@@ -556,7 +559,7 @@ def parse_model(d, ch_b):  # model_dict, input_channels(3)
         for j, a in enumerate(args):
             try:
                 args[j] = eval(a) if isinstance(a, str) else a  # eval strings
-            except:
+            except Exception:
                 pass
 
         chs = []
@@ -633,7 +636,7 @@ def parse_model(d, ch_b):  # model_dict, input_channels(3)
         for j, a in enumerate(args):
             try:
                 args[j] = eval(a) if isinstance(a, str) else a  # eval strings
-            except:
+            except Exception:
                 pass
         chs = []
         for x in ([f] if isinstance(f, (int, str)) else f):
@@ -699,7 +702,7 @@ def parse_model(d, ch_b):  # model_dict, input_channels(3)
         for j, a in enumerate(args):
             try:
                 args[j] = eval(a) if isinstance(a, str) else a  # eval strings
-            except:
+            except Exception:
                 pass
         chs = []
         for x in ([f] if isinstance(f, (int, str)) else f):
@@ -761,5 +764,7 @@ def parse_model(d, ch_b):  # model_dict, input_channels(3)
     save_b.extend(d['b1_save'])
     save_b2.extend(d['b2_save'])
 
-    return nn.Sequential(*layers_b), sorted(save_b), nn.Sequential(*layers_b2), sorted(save_b2), \
-            nn.Sequential(*layers_h), sorted(save_h), nn.Sequential(*layers_h2), sorted(save_h2)
+    return (nn.Sequential(*layers_b),
+            sorted(save_b), nn.Sequential(*layers_b2), sorted(save_b2),
+            nn.Sequential(*layers_h), sorted(save_h),
+            nn.Sequential(*layers_h2), sorted(save_h2))

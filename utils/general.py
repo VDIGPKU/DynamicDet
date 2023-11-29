@@ -14,9 +14,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torchvision
-import yaml
 
-from utils.metrics import fitness
 from utils.torch_utils import init_torch_seeds
 
 # Settings
@@ -422,9 +420,9 @@ def bbox_iou(box1,
         ch = torch.max(b1_y2, b2_y2) - torch.min(b1_y1, b2_y1)  # convex height
         if CIoU or DIoU:  # Distance or Complete IoU https://arxiv.org/abs/1911.08287v1
             c2 = cw**2 + ch**2 + eps  # convex diagonal squared
+            # center distance squared
             rho2 = ((b2_x1 + b2_x2 - b1_x1 - b1_x2)**2 +
-                    (b2_y1 + b2_y2 - b1_y1 - b1_y2)**
-                    2) / 4  # center distance squared
+                    (b2_y1 + b2_y2 - b1_y1 - b1_y2)**2) / 4
             if DIoU:
                 return iou - rho2 / c2  # DIoU
             elif CIoU:  # https://github.com/Zzh-tju/DIoU-SSD-pytorch/blob/master/utils/box/box_utils.py#L47
@@ -696,7 +694,9 @@ def non_max_suppression(prediction,
     xc = prediction[..., 4] > conf_thres  # candidates
 
     # Settings
-    min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
+    # (pixels) minimum and maximum box width and height
+    # min_wh = 2
+    max_wh = 4096
     max_det = 300  # maximum number of detections per image
     max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
     time_limit = 10.0  # seconds to quit after
@@ -714,11 +714,11 @@ def non_max_suppression(prediction,
 
         # Cat apriori labels if autolabelling
         if labels and len(labels[xi]):
-            l = labels[xi]
-            v = torch.zeros((len(l), nc + 5), device=x.device)
-            v[:, :4] = l[:, 1:5]  # box
+            cur_l = labels[xi]
+            v = torch.zeros((len(cur_l), nc + 5), device=x.device)
+            v[:, :4] = cur_l[:, 1:5]  # box
             v[:, 4] = 1.0  # conf
-            v[range(len(l)), l[:, 0].long() + 5] = 1.0  # cls
+            v[range(len(cur_l)), cur_l[:, 0].long() + 5] = 1.0  # cls
             x = torch.cat((x, v), 0)
 
         # If none remain process next image

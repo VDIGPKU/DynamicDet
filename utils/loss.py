@@ -71,8 +71,8 @@ class ComputeLoss:
         self.balance = {
             3: [4.0, 1.0, 0.4]
         }.get(det.nl, [4.0, 1.0, 0.25, 0.06, .02])  # P3-P7
-        #self.balance = {3: [4.0, 1.0, 0.4]}.get(det.nl, [4.0, 1.0, 0.25, 0.1, .05])  # P3-P7
-        #self.balance = {3: [4.0, 1.0, 0.4]}.get(det.nl, [4.0, 1.0, 0.5, 0.4, .1])  # P3-P7
+        # self.balance = {3: [4.0, 1.0, 0.4]}.get(det.nl, [4.0, 1.0, 0.25, 0.1, .05])  # P3-P7
+        # self.balance = {3: [4.0, 1.0, 0.4]}.get(det.nl, [4.0, 1.0, 0.5, 0.4, .1])  # P3-P7
         self.ssi = list(
             det.stride).index(16) if autobalance else 0  # stride 16 index
         self.BCEcls, self.BCEobj, self.gr, self.hyp, self.autobalance = BCEcls, BCEobj, model.gr, h, autobalance
@@ -115,7 +115,7 @@ class ComputeLoss:
                     t = torch.full_like(ps[:, 5:], self.cn,
                                         device=device)  # targets
                     t[range(n), tcls[i]] = self.cp
-                    #t[t==self.cp] = iou.detach().clamp(0).type(t.dtype)
+                    # t[t==self.cp] = iou.detach().clamp(0).type(t.dtype)
                     lcls += self.BCEcls(ps[:, 5:], t)  # BCE
 
                 # Append targets to text file
@@ -264,7 +264,7 @@ class ComputeLossOTA:
                 # Regression
                 grid = torch.stack([gi, gj], dim=1)
                 pxy = ps[:, :2].sigmoid() * 2. - 0.5
-                #pxy = ps[:, :2].sigmoid() * 3. - 1.
+                # pxy = ps[:, :2].sigmoid() * 3. - 1.
                 pwh = (ps[:, 2:4].sigmoid() * 2)**2 * anchors[i]
                 pbox = torch.cat((pxy, pwh), 1)  # predicted box
                 selected_tbox = targets[i][:, 2:6] * pre_gen_gains[i]
@@ -311,11 +311,11 @@ class ComputeLossOTA:
 
     def build_targets(self, p, targets, imgs):
 
-        #indices, anch = self.find_positive(p, targets)
+        # indices, anch = self.find_positive(p, targets)
         indices, anch = self.find_3_positive(p, targets)
-        #indices, anch = self.find_4_positive(p, targets)
-        #indices, anch = self.find_5_positive(p, targets)
-        #indices, anch = self.find_9_positive(p, targets)
+        # indices, anch = self.find_4_positive(p, targets)
+        # indices, anch = self.find_5_positive(p, targets)
+        # indices, anch = self.find_9_positive(p, targets)
 
         matching_bs = [[] for pp in p]
         matching_as = [[] for pp in p]
@@ -364,10 +364,10 @@ class ComputeLossOTA:
 
                 grid = torch.stack([gi, gj], dim=1)
                 pxy = (fg_pred[:, :2].sigmoid() * 2. - 0.5 +
-                       grid) * self.stride[i]  #/ 8.
-                #pxy = (fg_pred[:, :2].sigmoid() * 3. - 1. + grid) * self.stride[i]
+                       grid) * self.stride[i]  # / 8.
+                # pxy = (fg_pred[:, :2].sigmoid() * 3. - 1. + grid) * self.stride[i]
                 pwh = (fg_pred[:, 2:4].sigmoid() *
-                       2)**2 * anch[i][idx] * self.stride[i]  #/ 8.
+                       2)**2 * anch[i][idx] * self.stride[i]  # / 8.
                 pxywh = torch.cat([pxy, pwh], dim=-1)
                 pxyxy = xywh2xyxy(pxywh)
                 pxyxys.append(pxyxy)
@@ -529,7 +529,7 @@ class ComputeLossOTA:
             # Define
             b, c = t[:, :2].long().T  # image, class
             gxy = t[:, 2:4]  # grid xy
-            gwh = t[:, 4:6]  # grid wh
+            # gwh = t[:, 4:6]  # grid wh
             gij = (gxy - offsets).long()
             gi, gj = gij.T  # grid xy indices
 
@@ -586,7 +586,7 @@ class ComputeLossOTADual(ComputeLossOTA):
                 # Regression
                 grid = torch.stack([gi, gj], dim=1)
                 pxy = ps[:, :2].sigmoid() * 2. - 0.5
-                #pxy = ps[:, :2].sigmoid() * 3. - 1.
+                # pxy = ps[:, :2].sigmoid() * 3. - 1.
                 pwh = (ps[:, 2:4].sigmoid() * 2)**2 * anchors[i]
                 pbox = torch.cat((pxy, pwh), 1)  # predicted box
                 selected_tbox = targets[i][:, 2:6] * pre_gen_gains[i]
@@ -623,7 +623,7 @@ class ComputeLossOTADual(ComputeLossOTA):
                 # Regression
                 grid_2 = torch.stack([gi_2, gj_2], dim=1)
                 pxy_2 = ps_2[:, :2].sigmoid() * 2. - 0.5
-                #pxy = ps[:, :2].sigmoid() * 3. - 1.
+                # pxy = ps[:, :2].sigmoid() * 3. - 1.
                 pwh_2 = (ps_2[:, 2:4].sigmoid() * 2)**2 * anchors_2[i]
                 pbox_2 = torch.cat((pxy_2, pwh_2), 1)  # predicted box
                 selected_tbox_2 = targets_2[i][:, 2:6] * pre_gen_gains_2[i]
@@ -719,7 +719,7 @@ class ComputeLossOTADy(ComputeLossOTA):
                 # Regression
                 grid = torch.stack([gi, gj], dim=1)
                 pxy = ps[:, :2].sigmoid() * 2. - 0.5
-                #pxy = ps[:, :2].sigmoid() * 3. - 1.
+                # pxy = ps[:, :2].sigmoid() * 3. - 1.
                 pwh = (ps[:, 2:4].sigmoid() * 2)**2 * anchors[i]
                 pbox = torch.cat((pxy, pwh), 1)  # predicted box
                 selected_tbox = targets[i][:, 2:6] * pre_gen_gains[i]
@@ -756,7 +756,7 @@ class ComputeLossOTADy(ComputeLossOTA):
                 # Regression
                 grid_2 = torch.stack([gi_2, gj_2], dim=1)
                 pxy_2 = ps_2[:, :2].sigmoid() * 2. - 0.5
-                #pxy = ps[:, :2].sigmoid() * 3. - 1.
+                # pxy = ps[:, :2].sigmoid() * 3. - 1.
                 pwh_2 = (ps_2[:, 2:4].sigmoid() * 2)**2 * anchors_2[i]
                 pbox_2 = torch.cat((pxy_2, pwh_2), 1)  # predicted box
                 selected_tbox_2 = targets_2[i][:, 2:6] * pre_gen_gains_2[i]

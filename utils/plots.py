@@ -1,6 +1,5 @@
 # Plotting utils
 
-import glob
 import math
 import os
 import random
@@ -11,15 +10,10 @@ import cv2
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 import torch
-import yaml
-from PIL import Image, ImageDraw, ImageFont
-from scipy.signal import butter, filtfilt
+from PIL import Image
 
 from utils.general import xywh2xyxy, xyxy2xywh
-from utils.metrics import fitness
 
 # Settings
 matplotlib.rc('font', **{'size': 11})

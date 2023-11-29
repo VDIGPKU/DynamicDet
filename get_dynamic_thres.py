@@ -1,8 +1,5 @@
 import argparse
 import logging
-import os
-from pathlib import Path
-from threading import Thread
 
 import numpy as np
 import torch
@@ -29,14 +26,14 @@ def get_thres(data,
     set_logging()
     device = select_device(opt.device, batch_size=batch_size)
     if isinstance(data, str):
-        is_coco = data.endswith('coco.yaml')
+        # is_coco = data.endswith('coco.yaml')
         with open(data) as f:
             data = yaml.load(f, Loader=yaml.SafeLoader)
     check_dataset(data)  # check
     nc = int(data['nc'])  # number of classes
-    iouv = torch.linspace(0.5, 0.95,
-                          10).to(device)  # iou vector for mAP@0.5:0.95
-    niou = iouv.numel()
+    # iouv = torch.linspace(0.5, 0.95,
+    #                       10).to(device)  # iou vector for mAP@0.5:0.95
+    # niou = iouv.numel()
 
     # Load model
     model = Model(cfg, ch=3, nc=nc)  # create

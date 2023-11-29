@@ -1,9 +1,10 @@
-exclude: ^tests/data/
+exclude: ^(tests/data/|requirements.txt)
 repos:
   - repo: https://gitee.com/openmmlab/mirrors-flake8
     rev: 5.0.4
     hooks:
       - id: flake8
+        args: ["--max-line-length=119"]
   - repo: https://gitee.com/openmmlab/mirrors-isort
     rev: 5.11.5
     hooks:
@@ -42,7 +43,7 @@ repos:
     rev: v1.3.1
     hooks:
       - id: docformatter
-        args: ["--in-place", "--wrap-descriptions", "79"]
+        args: ["--in-place", "--wrap-descriptions", "119"]
   - repo: https://gitee.com/openmmlab/mirrors-pyupgrade
     rev: v3.0.0
     hooks:
